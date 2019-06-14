@@ -1,0 +1,29 @@
+{
+	"FileVersion" : 3,
+	"Version" : 1,
+	"VersionName" : "1.0.0",
+	"FriendlyName" : "MQTTPlugin",
+	"Description" : "MQTT client plugin for Unreal Engine 4",
+	"Category" : "Networking",
+	"CreatedBy" : "Yu He",
+	"CreatedByURL": "https://www.inconspicuous.no/",
+	"DocsURL" : "https://github.com/yuhe00/UE4MQTTPlugin",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : true,
+	"CanContainContent" : false,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "MQTTPlugin",
+			"Type" : "Runtime",
+			"LoadingPhase" : "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Android"
+			]
+		}
+	]
+}
