@@ -132,6 +132,7 @@ int FMQTTWorker::OnMessageArrived(void* Context, char* TopicName, int TopicLengt
 
 	if (TopicLength == 0)
 	{
+		// Explicit length is only used when there are '\0'-characters embedded in string, otherwise use strlen()
 		TopicLength = strlen(TopicName);
 	}
 
