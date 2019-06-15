@@ -145,8 +145,6 @@ int FMQTTWorker::OnMessageArrived(void* Context, char* TopicName, int TopicLengt
 
 	MQTTWorker->MessageEventQueue.Enqueue(MQTTMessage);
 
-	MQTTClient_freeMessage(&Message);
-
 	return 1;
 }
 
