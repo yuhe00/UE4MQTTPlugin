@@ -1,9 +1,12 @@
-#include "MQTTComponent.h"
+﻿#include "MQTTComponent.h"
 
 #include "MQTTClient.h"
 #include "MQTTPlugin.h"
 
-FMQTTWorker::FMQTTWorker(const FString& IpAddress, int Port) : IpAddress(IpAddress), Port(Port)
+FMQTTWorker::FMQTTWorker(const FString& ServerUri, const FString& Username, const FString& Password) :
+	ServerUri(ServerUri),
+	Username(Username),
+	Password(Password)
 {
 	Thread = FRunnableThread::Create(this, TEXT("MQTTWorker"), 0, TPri_BelowNormal);
 }
@@ -15,28 +18,44 @@ FMQTTWorker::~FMQTTWorker()
 
 bool FMQTTWorker::Init()
 {
-	FString ConnectString = FString::Printf(TEXT("tcp://%s:%d"), *this->IpAddress, this->Port);
+	FGuid UniqueClientId = FGuid::NewGuid();
 
-	FGuid Guid = FGuid::NewGuid();
-	MQTTClient_create(
-		&MQTTClientHandle, TCHAR_TO_ANSI(*ConnectString), TCHAR_TO_ANSI(*Guid.ToString()), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
-	MQTTClient_connectOptions ClientConnectionOptions = MQTTClient_connectOptions_initializer;
-	ClientConnectionOptions.keepAliveInterval = 20;
-	ClientConnectionOptions.cleansession = 1;
-
-	MQTTClient_setCallbacks(MQTTClientHandle, (void*) this, &FMQTTWorker::OnConnectionLost, &FMQTTWorker::OnMessageArrived,
-		&FMQTTWorker::OnDeliveryComplete);
-
-	int32 ReturnCode;
-	if ((ReturnCode = MQTTClient_connect(MQTTClientHandle, &ClientConnectionOptions)) == MQTTCLIENT_SUCCESS)
+	int ErrorCode;
+	if ((ErrorCode = MQTTClient_create(&MQTTClientHandle, TCHAR_TO_ANSI(*ServerUri), TCHAR_TO_ANSI(*UniqueClientId.ToString()),
+			 MQTTCLIENT_PERSISTENCE_NONE, nullptr)) == MQTTCLIENT_SUCCESS)
 	{
-		UE_LOG(LogMQTTPlugin, Log, TEXT("Connected to MQTT broker: %s"), *ConnectString);
-		ConnectEventQueue.Enqueue(ConnectString);
-		return true;
+		// TODO make more of these configurable
+
+		MQTTClient_connectOptions ClientConnectionOptions = MQTTClient_connectOptions_initializer;
+		ClientConnectionOptions.keepAliveInterval = 30;
+		ClientConnectionOptions.cleansession = 1;
+		ClientConnectionOptions.reliable = 1;
+		ClientConnectionOptions.will = nullptr;
+		ClientConnectionOptions.username = TCHAR_TO_ANSI(*Username);
+		ClientConnectionOptions.password = TCHAR_TO_ANSI(*Password);
+		ClientConnectionOptions.connectTimeout = 3;
+		ClientConnectionOptions.retryInterval = 0;
+		ClientConnectionOptions.ssl = nullptr;	// TODO SSL support
+
+		MQTTClient_setCallbacks(MQTTClientHandle, (void*) this, &FMQTTWorker::OnConnectionLost, &FMQTTWorker::OnMessageArrived,
+			&FMQTTWorker::OnDeliveryComplete);
+
+		// TODO websockets support
+
+		if ((ErrorCode = MQTTClient_connect(MQTTClientHandle, &ClientConnectionOptions)) == MQTTCLIENT_SUCCESS)
+		{
+			UE_LOG(LogMQTTPlugin, Log, TEXT("Connected to MQTT broker: %s"), *ServerUri);
+			ConnectEventQueue.Enqueue(ServerUri);
+			return true;
+		}
+		else
+		{
+			UE_LOG(LogMQTTPlugin, Error, TEXT("Failed to connect to MQTT broker: %s, return code %d"), *ServerUri, ErrorCode);
+		}
 	}
 	else
 	{
-		UE_LOG(LogMQTTPlugin, Error, TEXT("Failed to connect to MQTT broker: %s, return code %d"), *ConnectString, ReturnCode);
+		UE_LOG(LogMQTTPlugin, Error, TEXT("Failed to create MQTT client, return code %d"), ErrorCode);
 	}
 
 	return false;
@@ -46,9 +65,9 @@ uint32 FMQTTWorker::Run()
 {
 	FPlatformProcess::Sleep(0.03);
 
-	if (MQTTClientHandle != nullptr && MQTTClient_isConnected(MQTTClientHandle))
+	while (StopTaskCounter.GetValue() == 0)
 	{
-		while (StopTaskCounter.GetValue() == 0)
+		if (MQTTClientHandle != nullptr && MQTTClient_isConnected(MQTTClientHandle))
 		{
 			TPair<FString, EMQTTQosLevel> SubscribeRequest;
 			while (SubscribeRequestQueue.Dequeue(SubscribeRequest))
@@ -99,14 +118,25 @@ uint32 FMQTTWorker::Run()
 				}
 			}
 
+			// Save system resources?
 			// FPlatformProcess::Sleep(0.01);
 		}
+	}
 
-		if (MQTTClient_disconnect(MQTTClientHandle, 10000) == MQTTCLIENT_SUCCESS)
+	// Clean up when we are done
+
+	if (MQTTClientHandle && MQTTClient_isConnected(MQTTClientHandle))
+	{
+		int ErrorCode;
+		if ((ErrorCode = MQTTClient_disconnect(MQTTClientHandle, 3000)) == MQTTCLIENT_SUCCESS)
 		{
 			UE_LOG(LogMQTTPlugin, Log, TEXT("Disconnected from MQTT broker"));
 			MQTTClient_destroy(&MQTTClientHandle);
 			MQTTClientHandle = nullptr;
+		}
+		else
+		{
+			UE_LOG(LogMQTTPlugin, Error, TEXT("Failed to disconnect from server, return code %d"), ErrorCode);
 		}
 	}
 
@@ -172,7 +202,7 @@ void UMQTTComponent::BeginPlay()
 
 	if (!MQTTWorker && FPlatformProcess::SupportsMultithreading())
 	{
-		MQTTWorker = new FMQTTWorker(IpAddress, Port);
+		MQTTWorker = new FMQTTWorker(ServerUri, Username, Password);
 	}
 }
 

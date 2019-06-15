@@ -21,7 +21,7 @@ class FMQTTWorker : public FRunnable
 	FThreadSafeCounter StopTaskCounter;
 
 public:
-	FMQTTWorker(const FString& IpAddress, int Port);
+	FMQTTWorker(const FString& ServerUri, const FString& Username, const FString& Password);
 	~FMQTTWorker();
 
 	virtual bool Init() override;
@@ -49,8 +49,9 @@ private:
 private:
 	void* MQTTClientHandle;
 
-	FString IpAddress;
-	int Port;
+	FString ServerUri;
+	FString Username;
+	FString Password;
 
 	TMap<int, FMQTTMessage> PendingMessages;
 };
@@ -72,10 +73,13 @@ private:
 
 public:
 	UPROPERTY(Category = MQTT, EditDefaultsOnly, BlueprintReadOnly, Config)
-	FString IpAddress = "127.0.0.1";
+	FString ServerUri = "tcp://127.0.0.1:1883";
 
 	UPROPERTY(Category = MQTT, EditDefaultsOnly, BlueprintReadOnly, Config)
-	int Port = 1883;
+	FString Username;
+
+	UPROPERTY(Category = MQTT, EditDefaultsOnly, BlueprintReadOnly, Config)
+	FString Password;
 
 	UPROPERTY(Category = MQTT, BlueprintAssignable)
 	FOnConnectDelegate OnConnect;
