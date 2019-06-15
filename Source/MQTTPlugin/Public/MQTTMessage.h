@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "MQTTQosLevel.h"
 
 #include "MQTTMessage.generated.h"
 
@@ -16,7 +17,7 @@ struct FMQTTMessage
 	FString Payload;
 
 	UPROPERTY(Category = MQTT, BlueprintReadWrite)
-	int Qos;
+	EMQTTQosLevel Qos;
 
 	UPROPERTY(Category = MQTT, BlueprintReadWrite)
 	bool bRetained;

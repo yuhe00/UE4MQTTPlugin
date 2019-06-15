@@ -8,7 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnConnectDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDisconnectDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSubscribeDelegate, const FString&, TopicName, int, Qos);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSubscribeDelegate, const FString&, TopicName, EMQTTQosLevel, Qos);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnsubscribeDelegate, const FString&, TopicName);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeliveryDelegate, const FMQTTMessage&, MQTTMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageDelegate, const FMQTTMessage&, MQTTMessage);
@@ -35,13 +35,13 @@ private:
 
 private:
 	// These are threadsafe queues :)
-	TQueue<TPair<FString, int>> SubscribeRequestQueue;
+	TQueue<TPair<FString, EMQTTQosLevel>> SubscribeRequestQueue;
 	TQueue<FString> UnsubscribeRequestQueue;
 	TQueue<FMQTTMessage> PublishRequestQueue;
 
 	TQueue<FString> ConnectEventQueue;
 	TQueue<FString> DisconnectEventQueue;
-	TQueue<TPair<FString, int>> SubscribeEventQueue;
+	TQueue<TPair<FString, EMQTTQosLevel>> SubscribeEventQueue;
 	TQueue<FString> UnsubscribeEventQueue;
 	TQueue<FMQTTMessage> DeliveryEventQueue;
 	TQueue<FMQTTMessage> MessageEventQueue;
@@ -97,7 +97,7 @@ public:
 
 public:
 	UFUNCTION(Category = MQTT, BlueprintCallable)
-	void Subscribe(const FString& TopicName, int Qos);
+	void Subscribe(const FString& TopicName, EMQTTQosLevel Qos);
 
 	UFUNCTION(Category = MQTT, BlueprintCallable)
 	void Unsubscribe(const FString& TopicName);

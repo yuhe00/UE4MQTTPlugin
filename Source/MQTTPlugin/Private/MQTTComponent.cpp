@@ -50,11 +50,11 @@ uint32 FMQTTWorker::Run()
 	{
 		while (StopTaskCounter.GetValue() == 0)
 		{
-			TPair<FString, int> SubscribeRequest;
+			TPair<FString, EMQTTQosLevel> SubscribeRequest;
 			while (SubscribeRequestQueue.Dequeue(SubscribeRequest))
 			{
 				int ErrorCode =
-					MQTTClient_subscribe(MQTTClientHandle, TCHAR_TO_ANSI(*SubscribeRequest.Key), SubscribeRequest.Value);
+					MQTTClient_subscribe(MQTTClientHandle, TCHAR_TO_ANSI(*SubscribeRequest.Key), (int) SubscribeRequest.Value);
 				if (ErrorCode == MQTTCLIENT_SUCCESS)
 				{
 					UE_LOG(LogMQTTPlugin, Log, TEXT("Subscribed to channel: %s (QOS level %d)"), *SubscribeRequest.Key,
@@ -90,8 +90,8 @@ uint32 FMQTTWorker::Run()
 			{
 				MQTTClient_deliveryToken DeliveryToken;
 				int ErrorCode = MQTTClient_publish(MQTTClientHandle, TCHAR_TO_ANSI(*PublishRequestMessage.TopicName),
-					PublishRequestMessage.Payload.Len(), TCHAR_TO_ANSI(*PublishRequestMessage.Payload), PublishRequestMessage.Qos,
-					PublishRequestMessage.bRetained, &DeliveryToken);
+					PublishRequestMessage.Payload.Len(), TCHAR_TO_ANSI(*PublishRequestMessage.Payload),
+					(int) PublishRequestMessage.Qos, PublishRequestMessage.bRetained, &DeliveryToken);
 				if (ErrorCode == MQTTCLIENT_SUCCESS)
 				{
 					PendingMessages.Add(DeliveryToken, PublishRequestMessage);
@@ -211,7 +211,7 @@ void UMQTTComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			OnDisconnect.Broadcast();
 		}
 
-		TPair<FString, int> SubscribeEvent;
+		TPair<FString, EMQTTQosLevel> SubscribeEvent;
 		while (MQTTWorker->SubscribeEventQueue.Dequeue(SubscribeEvent))
 		{
 			OnSubscribe.Broadcast(SubscribeEvent.Key, SubscribeEvent.Value);
@@ -237,9 +237,9 @@ void UMQTTComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 	}
 }
 
-void UMQTTComponent::Subscribe(const FString& TopicName, int Qos)
+void UMQTTComponent::Subscribe(const FString& TopicName, EMQTTQosLevel Qos)
 {
-	MQTTWorker->SubscribeRequestQueue.Enqueue(TPair<FString, int>(TopicName, Qos));
+	MQTTWorker->SubscribeRequestQueue.Enqueue(TPair<FString, EMQTTQosLevel>(TopicName, Qos));
 }
 
 void UMQTTComponent::Unsubscribe(const FString& TopicName)
