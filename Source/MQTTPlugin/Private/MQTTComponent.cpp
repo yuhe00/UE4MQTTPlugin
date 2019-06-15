@@ -77,14 +77,14 @@ uint32 FMQTTWorker::Run()
 				if (ErrorCode == MQTTCLIENT_SUCCESS)
 				{
 					UE_LOG(LogMQTTPlugin, Log, TEXT("Subscribed to channel: %s (QOS level %d)"), *SubscribeRequest.Key,
-						SubscribeRequest.Value);
+						(int) SubscribeRequest.Value);
 
 					SubscribeEventQueue.Enqueue(SubscribeRequest);
 				}
 				else
 				{
 					UE_LOG(LogMQTTPlugin, Error, TEXT("Failed to subscribe to channel: %s (QOS level %d)"), *SubscribeRequest.Key,
-						SubscribeRequest.Value);
+						(int) SubscribeRequest.Value);
 				}
 			}
 
