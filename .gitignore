@@ -67,3 +67,5 @@ DerivedDataCache/*
 *.swp
 *.swo
 .ctrlp_cache/
+
+/.vscode
