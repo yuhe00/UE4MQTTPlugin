@@ -1,0 +1,3 @@
+[submodule "ThirdParty/PahoMQTT"]
+	path = ThirdParty/PahoMQTT
+	url = git@github.com:yuhe00/paho.mqtt.c.git
