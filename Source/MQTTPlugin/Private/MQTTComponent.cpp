@@ -88,13 +88,13 @@ uint32 FMQTTWorker::Run()
 			FMQTTMessage PublishRequestMessage;
 			while (PublishRequestQueue.Dequeue(PublishRequestMessage))
 			{
-				MQTTClient_deliveryToken* DeliveryToken = nullptr;
+				MQTTClient_deliveryToken DeliveryToken;
 				int ErrorCode = MQTTClient_publish(MQTTClientHandle, TCHAR_TO_ANSI(*PublishRequestMessage.TopicName),
 					PublishRequestMessage.Payload.Len(), TCHAR_TO_ANSI(*PublishRequestMessage.Payload), PublishRequestMessage.Qos,
-					PublishRequestMessage.bRetained, DeliveryToken);
+					PublishRequestMessage.bRetained, &DeliveryToken);
 				if (ErrorCode == MQTTCLIENT_SUCCESS)
 				{
-					PendingMessages.Add(*DeliveryToken, PublishRequestMessage);
+					PendingMessages.Add(DeliveryToken, PublishRequestMessage);
 				}
 			}
 
