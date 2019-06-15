@@ -1,4 +1,4 @@
-﻿#include "MQTTComponent.h"
+#include "MQTTComponent.h"
 
 #include "MQTTClient.h"
 #include "MQTTPlugin.h"
@@ -92,7 +92,8 @@ uint32 FMQTTWorker::Run()
 				int ErrorCode = MQTTClient_publish(MQTTClientHandle, TCHAR_TO_ANSI(*PublishRequestMessage.TopicName),
 					PublishRequestMessage.Payload.Len(), TCHAR_TO_ANSI(*PublishRequestMessage.Payload),
 					(int) PublishRequestMessage.Qos, PublishRequestMessage.bRetained, &DeliveryToken);
-				if (ErrorCode == MQTTCLIENT_SUCCESS)
+				if (ErrorCode == MQTTCLIENT_SUCCESS &&
+					PublishRequestMessage.Qos != EMQTTQosLevel::MQL_QOS_0)	// No delivery callback for QoS0
 				{
 					PendingMessages.Add(DeliveryToken, PublishRequestMessage);
 				}
