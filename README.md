@@ -1,6 +1,6 @@
-# UE4MQTTPlugin
+# MQTTPlugin
 
-MQTT client plugin for UE4 that is based on [PahoMQTT](https://github.com/eclipse/paho.mqtt.c).
+MQTT client plugin for UE4 that is based on [PahoMQTT](https://github.com/eclipse/paho.mqtt.c). Compatible with Android.
 
 ## Prerequisites
 
@@ -9,7 +9,11 @@ MQTT client plugin for UE4 that is based on [PahoMQTT](https://github.com/eclips
 
 ## Build
 
-PahoMQTT must be built first.
+Remember to pull submodules! :)
+
+```
+git submodule update --init --recursive
+```
 
 ### Windows
 
