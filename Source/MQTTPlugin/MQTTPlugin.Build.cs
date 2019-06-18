@@ -113,7 +113,7 @@ public class MQTTPlugin : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
-            var AndroidBinaryPath = ModuleDirectory + "/obj/local/";
+            var AndroidBinaryPath = String.Format("{0}/PahoMQTT/obj/local/", ThirdPartyPath);
             PublicLibraryPaths.Add(AndroidBinaryPath + "armeabi-v7a");
             PublicLibraryPaths.Add(AndroidBinaryPath + "arm64-v8a");
             PublicLibraryPaths.Add(AndroidBinaryPath + "x86");
