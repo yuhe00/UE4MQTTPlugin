@@ -289,15 +289,24 @@ void UMQTTComponent::Disconnect()
 
 void UMQTTComponent::Subscribe(const FString& TopicName, EMQTTQosLevel Qos)
 {
-	MQTTWorker->SubscribeRequestQueue.Enqueue(TPair<FString, EMQTTQosLevel>(TopicName, Qos));
+	if (MQTTWorker)
+	{
+		MQTTWorker->SubscribeRequestQueue.Enqueue(TPair<FString, EMQTTQosLevel>(TopicName, Qos));
+	}
 }
 
 void UMQTTComponent::Unsubscribe(const FString& TopicName)
 {
-	MQTTWorker->UnsubscribeRequestQueue.Enqueue(TopicName);
+	if (MQTTWorker)
+	{
+		MQTTWorker->UnsubscribeRequestQueue.Enqueue(TopicName);
+	}
 }
 
 void UMQTTComponent::Publish(const FMQTTMessage& MQTTMessage)
 {
-	MQTTWorker->PublishRequestQueue.Enqueue(MQTTMessage);
+	if (MQTTWorker)
+	{
+		MQTTWorker->PublishRequestQueue.Enqueue(MQTTMessage);
+	}
 }
