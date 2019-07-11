@@ -198,9 +198,9 @@ void UMQTTComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!MQTTWorker && FPlatformProcess::SupportsMultithreading())
+	if (bAutoActivate)
 	{
-		MQTTWorker = new FMQTTWorker(ServerUri, Username, Password);
+		Connect();
 	}
 }
 
@@ -208,17 +208,7 @@ void UMQTTComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	if (MQTTWorker != nullptr)
-	{
-		MQTTWorker->Stop();
-
-		if (MQTTWorker->Thread)
-		{
-			MQTTWorker->Thread->WaitForCompletion();
-		}
-
-		delete MQTTWorker;
-	}
+	Disconnect();
 }
 
 void UMQTTComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -262,6 +252,38 @@ void UMQTTComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 		{
 			OnMessage.Broadcast(MessageEventMessage);
 		}
+	}
+}
+
+void UMQTTComponent::Connect()
+{
+	if (!MQTTWorker && FPlatformProcess::SupportsMultithreading())
+	{
+		MQTTWorker = new FMQTTWorker(ServerUri, Username, Password);
+	}
+	else
+	{
+		UE_LOG(LogMQTTPlugin, Warning, TEXT("Already connected! Not attempting to connect again..."));
+	}
+}
+
+void UMQTTComponent::Disconnect()
+{
+	if (MQTTWorker != nullptr)
+	{
+		MQTTWorker->Stop();
+
+		if (MQTTWorker->Thread)
+		{
+			MQTTWorker->Thread->WaitForCompletion();
+		}
+
+		delete MQTTWorker;
+		MQTTWorker = nullptr;
+	}
+	else
+	{
+		UE_LOG(LogMQTTPlugin, Warning, TEXT("Not connected to MQTT..."));
 	}
 }
 

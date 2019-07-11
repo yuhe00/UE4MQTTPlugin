@@ -101,6 +101,12 @@ public:
 
 public:
 	UFUNCTION(Category = MQTT, BlueprintCallable)
+	void Connect();
+
+	UFUNCTION(Category = MQTT, BlueprintCallable)
+	void Disconnect();
+
+	UFUNCTION(Category = MQTT, BlueprintCallable)
 	void Subscribe(const FString& TopicName, EMQTTQosLevel Qos);
 
 	UFUNCTION(Category = MQTT, BlueprintCallable)
