@@ -63,8 +63,6 @@ bool FMQTTWorker::Init()
 
 uint32 FMQTTWorker::Run()
 {
-	FPlatformProcess::Sleep(0.03);
-
 	while (StopTaskCounter.GetValue() == 0)
 	{
 		if (MQTTClientHandle != nullptr && MQTTClient_isConnected(MQTTClientHandle))
