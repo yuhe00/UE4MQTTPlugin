@@ -65,7 +65,7 @@ public class MQTTPlugin : ModuleRules
 
     public MQTTPlugin(ReadOnlyTargetRules TargetRules) : base(TargetRules)
     {
-        PrivatePCHHeaderFile = "Public/MQTTPlugiin.h";
+        PrivatePCHHeaderFile = "Public/MQTTPlugin.h";
 
         PublicIncludePaths.Add(String.Format("{0}/PahoMQTT/src", ThirdPartyPath));
 
